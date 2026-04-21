@@ -43,7 +43,7 @@ export default function FlappyGame() {
 
     let pipes = [];
     let pipeWidth = 60;
-    let gap = 250;
+    let gap = 180;
     let score = 0;
     let gameOver = false;
 
@@ -114,7 +114,7 @@ export default function FlappyGame() {
 
       // spawn pipes
       spawnTimer += delta;
-      if (spawnTimer > 120) {
+      if (spawnTimer > 150) {
         createPipe();
         spawnTimer = 0;
       }
