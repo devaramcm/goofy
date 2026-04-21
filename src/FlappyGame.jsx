@@ -43,7 +43,7 @@ export default function FlappyGame() {
 
     let pipes = [];
     let pipeWidth = 60;
-    let gap = 180;
+    let gap = 250;
     let score = 0;
     let gameOver = false;
 
