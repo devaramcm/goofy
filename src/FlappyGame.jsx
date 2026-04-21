@@ -236,7 +236,7 @@ export default function FlappyGame() {
 
   return (
     <div style={{ textAlign: "center", touchAction: "none" }}>
-      <h2>Troll Flappy Bird 😈</h2>
+      <h2>Pandi Bird</h2>
       <canvas ref={canvasRef} />
     </div>
   );
