@@ -109,18 +109,24 @@ export default function FlappyGame() {
       });
     }
 
-    function update() {
+    function update(delta) {
       if (gameOver) return;
 
       frame++;
 
-      bird.velocity += bird.gravity;
-      bird.y += bird.velocity;
+      bird.velocity += bird.gravity * delta;
+      bird.y += bird.velocity * delta;
 
-      if (frame % 150 === 0) createPipe();
+
+      frame += delta;
+
+      if (frame > 150) {
+        createPipe();
+        frame = 0;
+      }
 
       pipes.forEach(pipe => {
-        pipe.x -= 1.5;
+        pipe.x -= 1.5 * delta;
 
         // collision
         if (
