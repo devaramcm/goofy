@@ -7,7 +7,6 @@ export default function FlappyGame() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // 📱 Responsive canvas
     canvas.width = Math.min(window.innerWidth, 400);
     canvas.height = Math.min(window.innerHeight, 600);
 
@@ -45,6 +44,8 @@ export default function FlappyGame() {
     let pipeWidth = 60;
     let gap = 180;
     let score = 0;
+
+    let gameStarted = false; // ✅ NEW
     let gameOver = false;
 
     let spawnTimer = 0;
@@ -55,11 +56,17 @@ export default function FlappyGame() {
     function handleAction() {
       if (!audioUnlocked) unlockAudio();
 
+      // 🚀 START GAME
+      if (!gameStarted) {
+        gameStarted = true;
+        return;
+      }
+
+      // 🔁 RESTART
       if (gameOver) {
         const now = Date.now();
         if (now - gameOverTime < restartDelay) return;
 
-        // RESET
         bird.y = 200;
         bird.velocity = 0;
         pipes = [];
@@ -69,6 +76,7 @@ export default function FlappyGame() {
         return;
       }
 
+      // 🕊️ JUMP
       bird.velocity = bird.lift;
 
       if (audioUnlocked) {
@@ -106,13 +114,11 @@ export default function FlappyGame() {
     }
 
     function update(delta) {
-      if (gameOver) return;
+      if (!gameStarted || gameOver) return; // ✅ IMPORTANT
 
-      // bird physics
       bird.velocity += bird.gravity * delta;
       bird.y += bird.velocity * delta;
 
-      // spawn pipes
       spawnTimer += delta;
       if (spawnTimer > 150) {
         createPipe();
@@ -122,7 +128,6 @@ export default function FlappyGame() {
       pipes.forEach(pipe => {
         pipe.x -= 1.2 * delta;
 
-        // collision
         if (
           bird.x < pipe.x + pipeWidth &&
           bird.x + bird.width > pipe.x &&
@@ -137,14 +142,12 @@ export default function FlappyGame() {
           }
         }
 
-        // score
         if (!pipe.passed && pipe.x + pipeWidth < bird.x) {
           score++;
           pipe.passed = true;
         }
       });
 
-      // ground / ceiling
       if (bird.y + bird.height > canvas.height || bird.y < 0) {
         gameOver = true;
         gameOverTime = Date.now();
@@ -174,11 +177,20 @@ export default function FlappyGame() {
       });
 
       // score
-      ctx.fillStyle = "white";
+      ctx.fillStyle = "black";
       ctx.font = "24px Arial";
       ctx.fillText("Score: " + score, 10, 30);
 
-      // UI
+      // ===== START SCREEN =====
+      if (!gameStarted) {
+        ctx.fillStyle = "black"
+        ctx.font = "24px Arial";
+        ctx.fillText("Tap or Press SPACE", 70, 260);
+        ctx.fillText("to Start", 140, 300);
+        return;
+      }
+
+      // ===== GAME OVER =====
       if (gameOver) {
         ctx.fillStyle = "red";
         ctx.font = "40px Arial";
@@ -198,7 +210,6 @@ export default function FlappyGame() {
       }
     }
 
-    // ===== LOOP (FIXED) =====
     let lastTime = 0;
 
     function loop(time) {
@@ -215,7 +226,6 @@ export default function FlappyGame() {
 
     requestAnimationFrame(loop);
 
-    // ===== CLEANUP =====
     return () => {
       window.removeEventListener("keydown", handleKey);
       window.removeEventListener("click", unlockAudio);
