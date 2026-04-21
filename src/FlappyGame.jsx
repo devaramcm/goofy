@@ -201,9 +201,15 @@ export default function FlappyGame() {
       }
     }
 
-    function loop() {
-      update();
+    let lastTime = 0;
+
+    function loop(time) {
+      let delta = (time - lastTime) / 16.67; // normalize to ~60fps
+      lastTime = time;
+
+      update(delta);
       draw();
+
       requestAnimationFrame(loop);
     }
 
