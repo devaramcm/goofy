@@ -36,22 +36,22 @@ export default function FlappyGame() {
       y: 200,
       width: 50,
       height: 50,
-      gravity: 0.1,
-      lift: -4,
+      gravity: 0.15,
+      lift: -4.5,
       velocity: 0
     };
 
     let pipes = [];
     let pipeWidth = 60;
     let gap = 180;
-    let frame = 0;
     let score = 0;
     let gameOver = false;
 
+    let spawnTimer = 0;
     let gameOverTime = 0;
     const restartDelay = 2000;
 
-    // ===== INPUT HANDLER (COMMON) =====
+    // ===== INPUT =====
     function handleAction() {
       if (!audioUnlocked) unlockAudio();
 
@@ -59,17 +59,16 @@ export default function FlappyGame() {
         const now = Date.now();
         if (now - gameOverTime < restartDelay) return;
 
-        // 🔁 RESET
+        // RESET
         bird.y = 200;
         bird.velocity = 0;
         pipes = [];
-        frame = 0;
         score = 0;
+        spawnTimer = 0;
         gameOver = false;
         return;
       }
 
-      // 🕊️ JUMP
       bird.velocity = bird.lift;
 
       if (audioUnlocked) {
@@ -78,7 +77,6 @@ export default function FlappyGame() {
       }
     }
 
-    // ===== DESKTOP =====
     function handleKey(e) {
       if (e.code === "Space") {
         e.preventDefault();
@@ -86,7 +84,6 @@ export default function FlappyGame() {
       }
     }
 
-    // ===== MOBILE + MOUSE =====
     function handleTouch(e) {
       e.preventDefault();
       handleAction();
@@ -94,7 +91,6 @@ export default function FlappyGame() {
 
     window.addEventListener("keydown", handleKey);
     window.addEventListener("click", unlockAudio);
-
     canvas.addEventListener("touchstart", handleTouch);
     canvas.addEventListener("mousedown", handleTouch);
 
@@ -112,21 +108,19 @@ export default function FlappyGame() {
     function update(delta) {
       if (gameOver) return;
 
-      frame++;
-
+      // bird physics
       bird.velocity += bird.gravity * delta;
       bird.y += bird.velocity * delta;
 
-
-      frame += delta;
-
-      if (frame > 150) {
+      // spawn pipes
+      spawnTimer += delta;
+      if (spawnTimer > 120) {
         createPipe();
-        frame = 0;
+        spawnTimer = 0;
       }
 
       pipes.forEach(pipe => {
-        pipe.x -= 1.5 * delta;
+        pipe.x -= 1.2 * delta;
 
         // collision
         if (
@@ -201,16 +195,16 @@ export default function FlappyGame() {
         } else {
           ctx.fillText("Tap / SPACE to Restart", 60, 320);
         }
-      } else {
-        ctx.font = "18px Arial";
-        ctx.fillText("Tap or Press SPACE", 90, 200);
       }
     }
 
+    // ===== LOOP (FIXED) =====
     let lastTime = 0;
 
     function loop(time) {
-      let delta = (time - lastTime) / 16.67; // normalize to ~60fps
+      if (!lastTime) lastTime = time;
+
+      const delta = (time - lastTime) / 16.67;
       lastTime = time;
 
       update(delta);
@@ -219,7 +213,7 @@ export default function FlappyGame() {
       requestAnimationFrame(loop);
     }
 
-    loop();
+    requestAnimationFrame(loop);
 
     // ===== CLEANUP =====
     return () => {
